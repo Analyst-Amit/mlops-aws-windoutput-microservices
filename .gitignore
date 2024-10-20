@@ -1,0 +1,30 @@
+# Ignore Python bytecode and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore virtual environments in any directory
+.venv
+
+# Ignore logs and other temporary files
+*.log
+*.bak
+*.swp
+*.tmp
+*.DS_Store
+
+# Ignore Docker-related files if not needed
+docker-compose.override.yml
+
+# Ignore test coverage and build directories
+htmlcov/
+.coverage
+.tox/
+dist/
+build/
+
+# Ignore system files
+*.env
+*.iml
+.idea/
+.vscode/

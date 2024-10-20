@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  inference-service:
+    build: ./inference-service
+    ports:
+      - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      - preprocessing-service  # Ensures the preprocessing service starts before inference
+    networks:
+      - app-network  # Shared network for both services
+
+  preprocessing-service:
+    build: ./preprocessing-service
+    ports:
+      - "8001:8001"  # Map port 8001 on the host to port 8001 in the container
+    networks:
+      - app-network  # Shared network for both services
+
+networks:
+  app-network:
+    driver: bridge  # Default bridge network for communication between services
