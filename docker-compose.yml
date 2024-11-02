@@ -22,6 +22,22 @@ services:
     networks:
       - app-network  # Shared network for both services
 
+  mlflow-server:
+    build: ./mlflow-service
+    ports:
+      - "5000:5000"  # Map port 5000 for MLflow
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - AWS_DEFAULT_REGION=us-east-1
+    # volumes:
+    #   - ./mlflow:/mlflow  # Volume to persist MLflow data locally (optional)
+    networks:
+      - app-network  # Shared network for all services
+    # depends_on:
+    #   - inference-service
+
 networks:
   app-network:
     driver: bridge  # Default bridge network for communication between services
