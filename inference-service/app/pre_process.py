@@ -14,6 +14,7 @@ def preprocess_input(data):
     """
 
     api_url = "http://preprocessing-service:8001/preprocess"
+    # api_url = "http://localhost:8001/preprocess"
     print(f"Sending preprocessing data to API: {api_url}")
 
     try:

@@ -1,17 +1,38 @@
 """
 Inference service for the wind turbine power prediction model.
 """
+import mlflow
 from fastapi import FastAPI
+from mlflow.tracking import MlflowClient
 from pre_process import preprocess_input
 from schemas import BatchInput
-from utility import load_model_from_s3, score_model
+from utility import load_model_by_alias, score_model
 
 
 # Define the FastAPI app
 app = FastAPI()
 
+# Set MLflow tracking URI to the local MLflow server
+# mlflow.set_tracking_uri("http://localhost:5000")
+
 # Load the model (assume model.pkl is in the current directory)
-model = load_model_from_s3("mlops-aws-windoutput")
+# model = load_model_from_s3("mlops-aws-windoutput")
+
+# Set MLflow tracking URI to the local MLflow server
+mlflow.set_tracking_uri("http://localhost:5000")
+
+# Connection test to MLflow server
+client = MlflowClient()
+try:
+    model_name = "sk-learn-extra-trees-regression-model-wind-output"
+    # Attempt to list registered models (will be empty if none exist)
+    model_versions = client.search_model_versions(f"name='{model_name}'")
+    print("Successfully connected to the MLflow server.")
+    print(f"Registered models: {model_versions}")
+    model = load_model_by_alias(model_name, "champion")
+    print("Model loaded successfully from MLflow Server...")
+except Exception as e:
+    print("Failed to connect to the MLflow server:", e)
 
 
 # Define a root endpoint
@@ -55,6 +76,6 @@ def predict(batch_input: BatchInput):
 
 # Run the FastAPI app using Uvicorn (a production-ready ASGI server)
 # if __name__ == "__main__":
-#     import uvicorn
+# import uvicorn
 
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
+# uvicorn.run(app, host="0.0.0.0", port=8000)

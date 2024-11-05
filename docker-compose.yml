@@ -1,43 +1,102 @@
 version: '3.8'
 
 services:
-  inference-service:
-    build: ./inference-service
-    ports:
-      - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
-    environment:
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
-      - AWS_DEFAULT_REGION=us-east-1
-    depends_on:
-      - preprocessing-service  # Ensures the preprocessing service starts before inference
-    networks:
-      - app-network  # Shared network for both services
+  # Inference Service
+  # inference-service:
+  #   build: ./inference-service
+  #   ports:
+  #     - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
+  #   environment:
+  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  #     - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+  #     - AWS_DEFAULT_REGION=us-east-1
+  #   depends_on:
+  #     - preprocessing-service
+  #     - mlflow-server
+  #   networks:
+  #     - app-network
 
+  # Preprocessing Service
   preprocessing-service:
     build: ./preprocessing-service
     ports:
       - "8001:8001"  # Map port 8001 on the host to port 8001 in the container
     networks:
-      - app-network  # Shared network for both services
+      - app-network
 
+  # MLflow Service
   mlflow-server:
     build: ./mlflow-service
     ports:
       - "5000:5000"  # Map port 5000 for MLflow
     environment:
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
-      - AWS_DEFAULT_REGION=us-east-1
-    # volumes:
-    #   - ./mlflow:/mlflow  # Volume to persist MLflow data locally (optional)
+      # - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_ACCESS_KEY_ID=minio_user
+      - AWS_SECRET_ACCESS_KEY=minio_password
+      # - BACKEND_STORE_URI=postgresql://user:password@postgres/mlflowdb  # Connect to PostgreSQL
+      # - ARTIFACT_ROOT=s3://mlops-aws-windoutput-staging  # MinIO bucket for artifacts
+    depends_on:
+      - postgres
+      - minio-create-bucket  # Ensures the bucket is created before MLflow starts
     networks:
-      - app-network  # Shared network for all services
-    # depends_on:
-    #   - inference-service
+      - app-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mlflowdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # MinIO Storage (S3-Compatible)
+  minio:
+    image: minio/minio
+    expose:
+      - "9000"
+    ports:
+      - "9000:9000"
+      - "9001:9001"  # Console access at http://localhost:9001
+    environment:
+      MINIO_ROOT_USER: minio_user
+      MINIO_ROOT_PASSWORD: minio_password
+    healthcheck:
+      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/9000' || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 5
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app-network
+
+  # Bucket creation for MinIO
+  minio-create-bucket:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set minio http://minio:9000 minio_user minio_password &&
+      mc mb minio/mlops-aws-windoutput-staging || echo 'Bucket already exists'
+      "
+    networks:
+      - app-network
 
 networks:
   app-network:
-    driver: bridge  # Default bridge network for communication between services
+    driver: bridge  # Shared bridge network for all services
+
+volumes:
+  postgres_data:
+  minio_data:
