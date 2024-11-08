@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 
 def validate_columns(df: pd.DataFrame, required_columns: List[str]):
@@ -21,14 +22,13 @@ def sanitize_input(data: List[Dict[str, float]]) -> List[Dict[str, float]]:
     """
     # Convert the list of dictionaries to a DataFrame
     df = pd.DataFrame(data)
-
+    print(df.head())
     # Ensure the date_time column is parsed and added to the DataFrame
-    df["date_time"] = pd.to_datetime(df["date_time"], format="%Y-%m-%dT%H:%M:%S")
+    df["date_time"] = pd.to_datetime(df["date_time"], format="%d %m %Y %H:%M")
 
     # Extract Month and Hour from the Date/Time
-    df["month"] = df["date_time"].dt.month
-    df["hour"] = df["date_time"].dt.hour
-
+    df["month"] = df["date_time"].dt.month.astype(float)
+    df["hour"] = df["date_time"].dt.hour.astype(float)
     # Remove the Date/Time column if it's no longer needed
     df.drop("date_time", axis=1, inplace=True)
 
@@ -55,9 +55,34 @@ def sanitize_input(data: List[Dict[str, float]]) -> List[Dict[str, float]]:
 
     # Convert the DataFrame to a list of dictionaries
     processed_data = df.to_dict(orient="records")
-    print(processed_data)
 
     return processed_data
+
+
+def split_data(data, test_size: float = 0.2):
+    df = pd.DataFrame(sanitize_input(data))
+
+    df = remove_invalid_power_rows(df)
+    trainDF, testDF = train_test_split(df, test_size=test_size, random_state=1234)
+    X_train = trainDF.drop(columns=["active_power"]).values.tolist()
+    y_train = trainDF["active_power"].values.tolist()
+    X_test = testDF.drop(columns=["active_power"]).values.tolist()
+    y_test = testDF["active_power"].values.tolist()
+
+    return {"X_train": X_train, "y_train": y_train, "X_test": X_test, "y_test": y_test}
+
+
+def remove_invalid_power_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove rows where LV ActivePower is 0 but Theoretical_Power_Curve is not 0.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to clean.
+
+    Returns:
+        pd.DataFrame: The cleaned DataFrame.
+    """
+    df = df[~((df["active_power"] == 0) & (df["theoretical_power"] != 0))]
+    return df
 
 
 # This is the data format which should go inside pre-process function

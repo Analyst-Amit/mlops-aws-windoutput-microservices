@@ -30,3 +30,9 @@ build/
 .vscode/
 
 postgres-data
+
+# Distribution / packaging
+*.egg-info/
+.eggs
+build
+dist

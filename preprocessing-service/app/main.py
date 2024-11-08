@@ -1,7 +1,7 @@
 """ This module defines the FastAPI application for the preprocessing service. """
 from fastapi import FastAPI, HTTPException
-from pipeline import sanitize_input
-from schemas import BatchInput
+from pipeline import sanitize_input, split_data
+from schemas import BatchInput, BatchTrainInput
 
 
 # Define the FastAPI app
@@ -23,6 +23,24 @@ def preprocess(data: BatchInput):
 
         # Preprocess the input data using the sanitize_input function
         processed_data = sanitize_input(input_data)
+
+        # Return the processed data as a JSON response
+        return {"processed_data": processed_data}
+    except Exception as e:
+        # Log the error and raise an HTTP exception
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail="Error while preprocessing the data")
+
+
+# Define an endpoint for real-time preprocessing
+@app.post("/preprocess_train")
+def preprocess_train(data: BatchTrainInput):
+    try:
+        # Extract list of dictionaries from the BatchInput model
+        input_data = [record.dict() for record in data.inputs]
+
+        # Preprocess the input data using the sanitize_input function
+        processed_data = split_data(input_data)
 
         # Return the processed data as a JSON response
         return {"processed_data": processed_data}

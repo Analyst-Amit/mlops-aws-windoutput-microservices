@@ -2,22 +2,22 @@ version: '3.8'
 
 services:
   # Inference Service
-  # inference-service:
-  #   build: ./inference-service
-  #   ports:
-  #     - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
-  #   environment:
-  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-  #     - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
-  #     - AWS_DEFAULT_REGION=us-east-1
-  #   depends_on:
-  #     - preprocessing-service
-  #     - mlflow-server
-  #   networks:
-  #     - app-network
+  inference-service:
+    build: ./inference-service
+    ports:
+      - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      - preprocessing-service
+      - mlflow-server
+    networks:
+      - app-network
 
-  # Preprocessing Service
+  #Preprocessing Service
   preprocessing-service:
     build: ./preprocessing-service
     ports:

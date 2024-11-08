@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Union
 # import joblib
 import mlflow
 import pandas as pd
+from mlflow.tracking import MlflowClient
 
 
 # from botocore.exceptions import ClientError
@@ -26,11 +27,11 @@ def score_model(model: Any, inputs: List[Dict[str, Union[float, int]]]) -> List[
     input_df = pd.DataFrame(
         [
             {
-                "Wind Speed (m/s)": record["wind_speed"],
-                "Theoretical_Power_Curve (KWh)": record["theoretical_power"],
-                "Wind Direction (°)": record["wind_direction"],
-                "Month": record["month"],
-                "Hour": record["hour"],
+                "wind_speed": record["wind_speed"],
+                "theoretical_power": record["theoretical_power"],
+                "wind_direction": record["wind_direction"],
+                "month": record["month"],
+                "hour": record["hour"],
             }
             for record in inputs
         ]
@@ -44,6 +45,30 @@ def load_model_by_alias(model_name, alias):
     """
     model_uri = f"models:/{model_name}@{alias}"
     return mlflow.pyfunc.load_model(model_uri)
+
+
+def load_model():
+    """
+    Loads the model from the MLflow model registry.
+    Returns the model if loaded successfully; otherwise, returns None.
+    """
+    # Configuration for MLflow tracking URI and model details
+    MLFLOW_TRACKING_URI = "http://mlflow-server:5000"
+    MODEL_NAME = "sk-learn-extra-trees-regression-model-wind-output"
+    MODEL_ALIAS = "champion"
+
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    client = MlflowClient()
+
+    try:
+        # Check if model is available in MLflow registry
+        client.search_model_versions(f"name='{MODEL_NAME}'")
+        model = load_model_by_alias(MODEL_NAME, MODEL_ALIAS)
+        print("Connected to MLflow and model loaded successfully.")
+        return model
+    except Exception as e:
+        print("Failed to connect to MLflow server:", e)
+        return None  # Model could not be loaded
 
 
 # # Scoring function to make predictions for multiple rows

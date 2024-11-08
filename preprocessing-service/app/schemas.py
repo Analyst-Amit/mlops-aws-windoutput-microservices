@@ -14,3 +14,16 @@ class ModelInput(BaseModel):
 # Define the input format for a batch of inputs
 class BatchInput(BaseModel):
     inputs: List[ModelInput]
+
+
+class TrainInput(BaseModel):
+    date_time: str
+    active_power: float
+    wind_speed: float
+    theoretical_power: float
+    wind_direction: float
+
+
+# Define the input format for a batch of inputs
+class BatchTrainInput(BaseModel):
+    inputs: List[TrainInput]
