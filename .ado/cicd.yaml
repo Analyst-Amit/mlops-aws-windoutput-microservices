@@ -1,0 +1,74 @@
+trigger:
+  branches:
+    include:
+      - '*'
+  tags:
+    include:
+      - '*'
+
+pr:
+  branches:
+    include:
+      - '*'
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: AWSVariables
+  - group: DockerCredentials
+
+stages:
+  - stage: Validator
+    displayName: Validate Build Prerequisites
+    jobs:
+      - job: validate_files
+        displayName: Validate Required Files and Directories
+        steps:
+          - checkout: self
+          - script: |
+              # Define lists of required files and directories
+              REQUIRED_FILES=(
+                "docker-compose.yml"
+                "pyproject.toml"
+                ".gitignore"
+                ".pre-commit-config.yaml"
+              )
+
+              REQUIRED_DIRS=(
+                "inference-service"
+                "mlflow-service"
+                "preprocessing-service"
+                "training-service"
+              )
+
+              # Function to check for files
+              check_files() {
+                echo "Checking for required files..."
+                for file in "${REQUIRED_FILES[@]}"; do
+                  if [ ! -f "$file" ]; then
+                    echo "Error: $file is missing!" && exit 1
+                  else
+                    echo "File '$file' is present."
+                  fi
+                done
+                echo "All required files are present."
+              }
+
+              # Function to check for directories
+              check_directories() {
+                echo "Checking for required directories..."
+                for dir in "${REQUIRED_DIRS[@]}"; do
+                  if [ ! -d "$dir" ]; then
+                    echo "Error: Directory '$dir' is missing!" && exit 1
+                  else
+                    echo "Directory '$dir' is present."
+                  fi
+                done
+                echo "All required directories are present."
+              }
+
+              # Run checks
+              check_files
+              check_directories
+            displayName: Validate Files and Directories
