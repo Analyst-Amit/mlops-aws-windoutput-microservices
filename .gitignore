@@ -1,38 +1,104 @@
-# Ignore Python bytecode and compiled files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.pyo
-
-# Ignore virtual environments in any directory
-.venv
-
-# Ignore logs and other temporary files
-*.log
-*.bak
-*.swp
-*.tmp
-*.DS_Store
-
-# Ignore Docker-related files if not needed
-docker-compose.override.yml
-
-# Ignore test coverage and build directories
-htmlcov/
-.coverage
-.tox/
-dist/
-build/
-
-# Ignore system files
-*.env
-*.iml
-.idea/
-.vscode/
-
-postgres-data
+*$py.class
 
 # Distribution / packaging
 *.egg-info/
-.eggs
-build
-dist
+.eggs/
+build/
+dist/
+
+# Python virtual environments
+env/
+venv/
+ENV/
+.venv
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Unit test / coverage reports
+.coverage
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.tox/
+.nox/
+.junit/
+.junit_cache/
+htmlcov/
+.junit_cache/
+.junittest/
+
+# Docker specific files
+**/Dockerfile
+**/docker-compose.yml
+docker-compose.override.yml
+docker-compose.*
+.dockerignore
+**/docker-compose.prod.yml
+
+# Caches
+.pytest_cache/
+__pypackages__/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# MLflow
+mlruns/
+mlflow-artifacts/
+mlproject/
+**/mlflow/
+**/mlproject/
+# MLflow model files and artifacts
+artifacts/
+models/
+mlartifacts/
+mlproject/
+mlmodels/
+
+# Machine learning artifacts
+# Data files and model outputs
+data/
+datasets/
+output/
+reports/
+trained_models/
+predictions/
+logs/
+configurations/
+metrics/
+
+# Temporary, cache, and other auto-generated files
+**/*.tmp
+**/*.log
+**/*.temp
+**/*.bak
+**/*.swp
+**/log/
+
+# Local and cloud configurations
+**/config/
+awsconfiguration/
+azureconfiguration/
+.gcs/
+.cloud/
+.localconfig/
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+
+# Databricks Extensions
+.dbx/lock.json

@@ -14,10 +14,11 @@ services:
     depends_on:
       - preprocessing-service
       - mlflow-server
+      - training-service
     networks:
       - app-network
 
-  #Preprocessing Service
+  # Preprocessing Service
   preprocessing-service:
     build: ./preprocessing-service
     ports:
@@ -31,12 +32,9 @@ services:
     ports:
       - "5000:5000"  # Map port 5000 for MLflow
     environment:
-      # - MLFLOW_TRACKING_URI=http://mlflow-server:5000
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
       - AWS_ACCESS_KEY_ID=minio_user
       - AWS_SECRET_ACCESS_KEY=minio_password
-      # - BACKEND_STORE_URI=postgresql://user:password@postgres/mlflowdb  # Connect to PostgreSQL
-      # - ARTIFACT_ROOT=s3://mlops-aws-windoutput-staging  # MinIO bucket for artifacts
     depends_on:
       - postgres
       - minio-create-bucket  # Ensures the bucket is created before MLflow starts
@@ -90,6 +88,21 @@ services:
       mc alias set minio http://minio:9000 minio_user minio_password &&
       mc mb minio/mlops-aws-windoutput-staging || echo 'Bucket already exists'
       "
+    networks:
+      - app-network
+
+  # Training Service
+  training-service:
+    build: ./training-service
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      - mlflow-server
+      - preprocessing-service
     networks:
       - app-network
 

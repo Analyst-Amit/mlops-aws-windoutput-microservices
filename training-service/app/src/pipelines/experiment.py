@@ -21,7 +21,7 @@ from sklearn.metrics import root_mean_squared_error
 from utils._config import load_model_by_alias
 
 
-def setup_mlflow_tracking(uri="http://localhost:5000"):
+def setup_mlflow_tracking(uri="http://mlflow-server:5000"):
     """
     Set the MLflow tracking URI and initialize the client.
 

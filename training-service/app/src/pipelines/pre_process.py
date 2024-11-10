@@ -15,8 +15,8 @@ def preprocess_input(data):
         The training and testing features and targets as DataFrames.
     """
 
-    # api_url = "http://preprocessing-service:8001/preprocess_train"
-    api_url = "http://localhost:8001/preprocess_train"
+    api_url = "http://preprocessing-service:8001/preprocess_train"
+    # api_url = "http://localhost:8001/preprocess_train"
     print(f"Sending preprocessing data to API: {api_url}")
     # print(data[:5])
     try:
